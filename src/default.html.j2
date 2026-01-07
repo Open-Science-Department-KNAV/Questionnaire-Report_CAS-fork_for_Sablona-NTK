@@ -1,0 +1,354 @@
+<!DOCTYPE HTML>
+{# ------------------------------------------------------------------------------------ #}
+{#  VARIABLES                                                                           #}
+{# ------------------------------------------------------------------------------------ #}
+{%- set dc = ctx|to_context_obj -%}
+{%- import "src/globals.j2" as globals with context -%}
+{# ------------------------------------------------------------------------------------ #}
+{#  TAGS, REFERENCES, and EXPERTS MACROS                                                 #}
+{# ------------------------------------------------------------------------------------ #}
+{%- macro renderResourcePageReferences(question) -%}
+  {% set refs = [] %}
+  {% for ref in question.resource_page_references %}
+    {% if ref.resource_page_uuid and ref.resource_page and ref.resource_page.collection %}
+      {% do refs.append({
+        'ref_uuid': ref.uuid,
+        'uuid': ref.resource_page_uuid,
+        'collection_title': ref.resource_page.collection.title,
+        'title': ref.resource_page.title,
+      }) %}
+    {% endif %}
+  {% endfor %}
+  {% if refs|length > 0 %}
+    {#<div class="references references-resourcepage">
+      <svg aria-hidden="true" data-prefix="fas" data-icon="book" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-book fa-w-14 fa-2x"><path fill="currentColor" d="M448 360V24c0-13.3-10.7-24-24-24H96C43 0 0 43 0 96v320c0 53 43 96 96 96h328c13.3 0 24-10.7 24-24v-16c0-7.5-3.5-14.3-8.9-18.7-4.2-15.4-4.2-59.3 0-74.7 5.4-4.3 8.9-11.1 8.9-18.6zM128 134c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm0 64c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm253.4 250H96c-17.7 0-32-14.3-32-32 0-17.6 14.4-32 32-32h285.4c-1.9 17.1-1.9 46.9 0 64z" class=""></path></svg>
+      <span><b>Resource Pages:</b></span>
+      {% for ref in refs %}
+        {%- set resourcePageLink = dc.config.client_url ~ '/knowledge-models/' ~ dc.package.id ~ '/resource-pages/' ~ ref.uuid -%}
+        <a id="{{ref.ref_uuid}}" class="reference resourcepage-link" href="{{ resourcePageLink }}"><i>{{ ref.collection_title }} - {{ ref.title }}</i></a>
+      {% endfor %}
+    </div>#}
+  {% endif %}
+{%- endmacro -%}
+{%- macro renderURLReferences(question) -%}
+  {% set refs = [] %}
+  {% for ref in question.url_references %}
+    {% if ref.label and ref.url %}
+      {% do refs.append({
+        'uuid': ref.uuid,
+        'label': ref.label,
+        'url': ref.url,
+      }) %}
+    {% endif %}
+  {% endfor %}
+  {% if refs|length > 0 %}
+    {#<div class="references references-url" >
+      <svg aria-hidden="true" data-prefix="far" data-icon="external-link" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" class="svg-inline--fa fa-external-link fa-w-18 fa-2x"><path fill="currentColor" d="M576 14.4l-.174 163.2c0 7.953-6.447 14.4-14.4 14.4H528.12c-8.067 0-14.56-6.626-14.397-14.691l2.717-73.627-2.062-2.062-278.863 278.865c-4.686 4.686-12.284 4.686-16.971 0l-23.029-23.029c-4.686-4.686-4.686-12.284 0-16.971L474.379 61.621l-2.062-2.062-73.626 2.717C390.626 62.44 384 55.946 384 47.879V14.574c0-7.953 6.447-14.4 14.4-14.4L561.6 0c7.953 0 14.4 6.447 14.4 14.4zM427.515 233.74l-24 24a12.002 12.002 0 0 0-3.515 8.485V458a6 6 0 0 1-6 6H54a6 6 0 0 1-6-6V118a6 6 0 0 1 6-6h301.976c10.691 0 16.045-12.926 8.485-20.485l-24-24A12.002 12.002 0 0 0 331.976 64H48C21.49 64 0 85.49 0 112v352c0 26.51 21.49 48 48 48h352c26.51 0 48-21.49 48-48V242.225c0-10.691-12.926-16.045-20.485-8.485z" class=""></path></svg>
+      <b>External Links:</b>
+      {% for ref in refs %}
+        <a id="{{ref.uuid}}" class="reference url-link" href="{{ref.url}}" target="_blank"><i>{{ref.label}}</i></a>
+      {% endfor %}
+    </div>#}
+  {% endif %}
+{%- endmacro -%}
+{%- macro renderExperts(question) -%}
+  {% set experts = [] %}
+  {% for expert in question.experts %}
+    {% if expert.name and expert.email %}
+      {% do experts.append({
+        'uuid': expert.uuid,
+        'email': expert.email,
+        'name': expert.name,
+      }) %}
+    {% endif %}
+  {% endfor %}
+  {% if experts|length > 0 %}
+    {#<div class="experts">
+      <svg aria-hidden="true" data-prefix="far" data-icon="address-book" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-address-book fa-w-14 fa-2x"><path fill="currentColor" d="M436 160c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-20V48c0-26.5-21.5-48-48-48H48C21.5 0 0 21.5 0 48v416c0 26.5 21.5 48 48 48h320c26.5 0 48-21.5 48-48v-48h20c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-20v-64h20c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-20v-64h20zm-68 304H48V48h320v416zM208 256c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm-89.6 128h179.2c12.4 0 22.4-8.6 22.4-19.2v-19.2c0-31.8-30.1-57.6-67.2-57.6-10.8 0-18.7 8-44.8 8-26.9 0-33.4-8-44.8-8-37.1 0-67.2 25.8-67.2 57.6v19.2c0 10.6 10 19.2 22.4 19.2z" class=""></path></svg>
+      <b>Experts:</b>
+      {% for expert in experts %}
+        <i class="expert" id="{{expert.uuid}}">{{expert.name}} (<a href="mailto:{{expert.email}}">{{expert.email}}</a>)</i>
+      {% endfor %}
+    </div>#}
+  {% endif %}
+{%- endmacro -%}
+{# ------------------------------------------------------------------------------------ #}
+{#  ANSWERS MACROS                                                                      #}
+{# ------------------------------------------------------------------------------------ #}
+{%- macro renderAnswerValue(question, reply, path, humanIdentifier) -%}
+  <div class="answer-block answer-simple" id="{{path}}" data-path="{{path}}" data-type="answer">
+    <p class="answer">
+      {% if reply is of_type("StringReply") %}
+        <span>{{reply.value}}</span>
+      {% elif reply.is_integration or reply.is_legacy_integration %}
+        <span>{{reply.value|markdown}}</span>
+      {% else %}
+        <span>{{reply.value}}</span>
+      {% endif %}
+    </p>
+  </div>
+{%- endmacro -%}
+{%- macro renderAnswerOption(question, reply, path, humanIdentifier) -%}
+  {% set hi = question.answers.index(reply.answer) %}
+  {% set answer = reply.answer %}
+  {% set path = path ~ "." ~ answer.uuid %}
+  {% set humanIdentifier = humanIdentifier ~ "." ~ hi|of_alphabet %}
+  <div class="answer-block answer-option" id="{{path}}" data-path="{{path}}" data-uuid="{{answer.uuid}}" data-type="answer">
+    <p class="answer">
+      <span>{{answer.label}}</span>
+    </p>
+    {% if answer.followups|length > 0 %}
+      <div class="followups">
+        {% set hiPrefix = humanIdentifier ~ "." %}
+        {% for question in answer.followups %}
+          {% set x = loop.index %}
+          {{ renderQuestion(question, path, hiPrefix ~ x) }}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{%- endmacro -%}
+{%- macro renderAnswerList(question, reply, path, humanIdentifier) -%}
+  <div class="answer-block answer-items" id="{{path}}" data-path="{{path}}" data-type="answer">
+    {% set itemPathPrefix = path ~ "." %}
+    {% set hiPrefix = humanIdentifier ~ "." %}
+    {% for itemUuid in reply.items %}
+      {% set itemPath = itemPathPrefix ~ itemUuid %}
+      {% set itemHumanIdentifier = hiPrefix ~ (loop.index - 1)|of_alphabet %}
+      <div class="answer-item" id="item-{{ question.uuid }}-{{itemUuid}}" data-path="{{itemPath}}">
+        <div class="followups">
+          {% for question in question.followups %}
+            {% set x = loop.index %}
+            {{ renderQuestion(question, itemPath, itemHumanIdentifier ~ "." ~ x) }}
+          {% else %}
+            No follow up questions
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      No answer items
+    {% endfor %}
+  </div>
+{%- endmacro -%}
+{%- macro renderAnswerChoiceList(question, reply, path, humanIdentifier) -%}
+  <div class="answer-block answer-items" id="{{path}}" data-path="{{path}}" data-type="answer">
+    <div class="choices-list">
+    {% for choice in question.choices %}
+      {%- if choice in reply.choices %}
+        <div class="choice choice-selected">
+          {{ choice.label }}
+        </div>
+      {%- else %}
+      {%- endif %}
+    {% endfor %}
+    </div>
+  </div>
+{%- endmacro -%}
+{%- macro renderAnswerItemSelect(question, reply, path, humanIdentifier) -%}
+  <div class="answer-block answer-select" id="{{path}}" data-path="{{path}}" data-type="answer">
+    <p class="answer">
+      <a href="#item-{{ question.list_question_uuid }}-{{ reply.item_uuid }}">{{ reply.item_title }}</a>
+    </p>
+  </div>
+{%- endmacro -%}
+{%- macro renderAnswerFile(question, reply, path, humanIdentifier) -%}
+  <div class="answer-block answer-select" id="{{path}}" data-path="{{path}}" data-type="answer">
+    <p class="answer">
+      {% if reply.file %}
+        <span><a href="{{ reply.file.download_url }}" target="_blank">{{ reply.file.name }}</a> ({{ reply.file.size|bytesize_format }})</span>
+      {% else %}
+        <span>The file has been deleted</span>
+      {% endif %}
+    </p>
+  </div>
+{%- endmacro -%}
+{# ------------------------------------------------------------------------------------ #}
+{#  QUESTION MACROS                                                                     #}
+{# ------------------------------------------------------------------------------------ #}
+{%- macro questionClasses(question) -%}
+{%- endmacro -%}
+{%- macro renderQuestionExtras(question) -%}
+  <div class="extra-data">
+    {# Question - References - Resource Page References #}
+    {{ renderResourcePageReferences(question) }}
+    {# Question - References - URL References #}
+    {{ renderURLReferences(question) }}
+    {# Question - Experts #}
+    {{ renderExperts(question) }}
+  </div>
+{%- endmacro -%}
+{%- macro renderQuestionReply(question, path, humanIdentifier) -%}
+  {# Question - Answers #}
+  {% set reply = question.replies.get(path) %}
+  {% if reply and reply.value %}
+    {% if question is of_type("ValueQuestion") and reply is of_type("StringReply") %}
+      {{ renderAnswerValue(question, reply, path, humanIdentifier) }}
+    {% elif question is of_type("OptionsQuestion") and reply is of_type("AnswerReply") %}
+      {{ renderAnswerOption(question, reply, path, humanIdentifier) }}
+    {% elif question is of_type("ListQuestion") and reply is of_type("ItemListReply") %}
+      {{ renderAnswerList(question, reply, path, humanIdentifier) }}
+    {% elif question is of_type("IntegrationQuestion") and reply is of_type("IntegrationReply") %}
+      {{ renderAnswerValue(question, reply, path, humanIdentifier) }}
+    {% elif question is of_type("MultiChoiceQuestion") and reply is of_type("MultiChoiceReply") %}
+      {{ renderAnswerChoiceList(question, reply, path, humanIdentifier) }}
+    {% elif question is of_type("ItemSelectQuestion") and reply is of_type("ItemSelectReply") %}
+      {{ renderAnswerItemSelect(question, reply, path, humanIdentifier) }}
+    {% elif question is of_type("FileQuestion") and reply is of_type("FileReply") %}
+      {{ renderAnswerFile(question, reply, path, humanIdentifier) }}
+    {% endif %}
+  {% endif %}
+{%- endmacro -%}
+{%- macro renderQuestion(question, path, humanIdentifier) -%}
+  {% set path = path ~ "." ~ question.uuid %}
+  <div class={{questionClasses(question)}} id="{{path}}" data-uuid="{{question.uuid}}" data-type="question">
+    <div class="question-header">
+      <h4 class="title">
+        <strong class="human-identifier">{{humanIdentifier}}</strong>
+        {{question.title}}
+      </h4>
+      
+      {% if question.tags|length > 0 %}
+      {% endif %}
+    </div>
+    
+    <div class="text">
+      {{question.text|markdown}}
+    </div>
+
+    {{ renderQuestionExtras(question) }}
+
+    {{ renderQuestionReply(question, path, humanIdentifier) }}
+  </div>
+{%- endmacro -%}
+{# ------------------------------------------------------------------------------------ #}
+{#  CHAPTER MACROS                                                                      #}
+{# ------------------------------------------------------------------------------------ #}
+{%- macro renderChapter(chapter, humanIdentifier) -%}
+      <section class="chapter" id="{{chapter.uuid}}" data-uuid="{{chapter.uuid}}" data-type="chapter">
+        <h2 class="title">{{humanIdentifier|roman}}. {{chapter.title}}</h2>
+        {% for chapterReport in chapter.reports %}
+        {% endfor %}
+
+        <section class="questions">
+          {% for question in chapter.questions %}
+            {{ renderQuestion(question, chapter.uuid, loop.index) }}
+          {% else %}
+          {% endfor %}
+        </section>
+      </section>
+{%- endmacro -%}
+{# ------------------------------------------------------------------------------------ #}
+{#  HTML LAYOUT                                                                         #}
+{# ------------------------------------------------------------------------------------ #}
+{%- macro renderFrontPage() -%}
+  <header>
+    <h1>{{dc.qtn.name}}</h1>
+
+    <table class="dmp-data">
+      <tr>
+        <th>Organization</th>
+        <td>{{dc.org.name}}</td>
+
+      </tr>
+      {% if dc.qtn.created_by %}
+      <tr>
+        <th>Created by</th>
+        <td>{{dc.qtn.created_by.first_name}} {{dc.qtn.created_by.last_name}} (<a href="mailto:{{dc.qtn.created_by.email}}">{{dc.qtn.created_by.email}}</a>)</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <th>Based on</th>
+        <td>{{dc.pkg.name}}, {{dc.pkg.version}} (<span class="package-id"><span class="organization-id">{{dc.pkg.org_id}}</span>:<span class="km-id">{{dc.pkg.km_id}}</span>:<span class="version">{{dc.pkg.version}}</span></span>)</td>
+      </tr>
+      {% for version in dc.qtn.versions if version.uuid == dc.qtn.version %}
+      <tr>
+        <th>Version</th>
+        <td>{{version.name}} ({{ version.created_at|datetime_format("%d %b %Y %H:%M:%S") }} UTC)</td>
+      </tr>
+      {% endfor %}
+      {% if dc.current_phase %}
+
+      {% endif %}
+      {% if dc.qtn.project_tags|length > 0 %}
+      <tr>
+        <th>Project Tags</th>
+        <td class="tags-row">{% for tag in dc.qtn.project_tags %}<span class="tag project-tag">{{ tag }}</span> {% endfor %}</td>
+      </tr>
+      {% endif %}
+      {% if dc.qtn.description %}
+      <tr>
+        <th>Description</th>
+        <td>{{ dc.qtn.description }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <th>Created at</th>
+        <td>{{ dc.doc.created_at|datetime_format("%d %b %Y") }}</td>
+      </tr>
+    </table>
+    <p class="tool-info">
+      Report generated by {{ globals.fullName }} &lt;<a href="{{ globals.linkUrl }}" target="_blank">{{ globals.link }}</a>&gt;
+      {{ globals.image }}
+    </p>
+  </header>
+{%- endmacro -%}
+{%- macro renderVersionsOverview() -%}
+  <div id="versions">
+    <table>
+      <thead>
+        <tr>
+          <th>Version</th>
+          <th>Date</th>
+          <th>Changes</th>
+        </tr>
+      <thead>
+      <tbody>
+        {% for version in dc.qtn.versions|reverse %}
+          <tr>
+            <td class="version-name">{{ version.name }}</td>
+            <td class="version-date">{{ version.created_at|datetime_format("%d %b %Y") }}</td>
+            <td class="version-changes">{{ version.description }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="3" class="no-versions">There are no named versions</tr>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{%- endmacro -%}
+{%- macro renderContent() -%}
+  <main>
+
+      {% if dc.qtn.versions|length > 0 %}
+      <h2>History of Versions</h2>
+      {{ renderVersionsOverview() }}
+      {% endif %}
+    </section>
+    {% for chapter in dc.km.chapters %}
+      {{ renderChapter(chapter, loop.index) }}
+    {% else %}
+      <p class="text-light">No chapters</p>
+    {% endfor %}
+  </main>
+{%- endmacro -%}
+{# ------------------------------------------------------------------------------------ #}
+{#  HTML TEMPLATE                                                                       #}
+{# ------------------------------------------------------------------------------------ #}
+<html>
+  <head>
+    <title>{{ globals.name }} Questionnaire Report: {{dc.qtn.name}}</title>
+    <meta charset="utf-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <style>{% include "src/default.css" %}</style>
+  </head>
+  <body>
+    <article class="dmp">
+      {{ renderFrontPage() }}
+      {{ renderContent() }}
+    </article>
+  </body>
+</html>
